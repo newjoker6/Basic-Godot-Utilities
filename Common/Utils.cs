@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Security.Cryptography;
 using System.Text;
 using static Godot.RenderingServer;
 
@@ -7,6 +8,16 @@ using static Godot.RenderingServer;
 
 public partial class Utils : Node
 {
+
+    private static AesContext aes = new AesContext();
+
+    public enum ENCRYPTIONMODE
+    {
+        XOR,
+        ECB,
+        CBC
+    }
+
     public static void RainbowLog(string msg, bool pastel = false)
     {
         if (pastel)
@@ -156,10 +167,238 @@ public static void LogRenderingStats()
         using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
         Variant parsedJson = Json.ParseString(file.GetAsText());
 
-        // Ensure the parsed JSON is a dictionary before casting
         if (parsedJson.VariantType == Variant.Type.Dictionary)
             return (Godot.Collections.Dictionary)parsedJson;
 
-        return new Godot.Collections.Dictionary(); // Return an empty dictionary if parsing fails
+        return new Godot.Collections.Dictionary();
+    }
+
+    public static byte[] PadData(byte[] data)
+    {
+        int paddingSize = 16 - (data.Length % 16);
+        if (paddingSize == 16)
+        {
+            paddingSize = 0;
+        }
+
+        byte[] paddedData = new byte[data.Length + paddingSize];
+        Array.Copy(data, paddedData, data.Length);
+
+        for (int i = data.Length; i < paddedData.Length; i++)
+        {
+            paddedData[i] = 0;
+        }
+
+        return paddedData;
+    }
+
+    public static byte[] RemovePadding(byte[] data)
+    {
+        int paddingSize = 0;
+
+        for (int i = data.Length - 1; i >= 0; i--)
+        {
+            if (data[i] == 0)
+            {
+                paddingSize++;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        byte[] unpaddedData = new byte[data.Length - paddingSize];
+        Array.Copy(data, unpaddedData, unpaddedData.Length);
+
+        return unpaddedData;
+    }
+
+    public static byte[] XorEncryptDecrypt(byte[] data, int key)
+    {
+        byte[] result = new byte[data.Length];
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            result[i] = (byte)(data[i] ^ key);
+        }
+
+        return result;
+    }
+
+    public static byte[] EncryptCbc(byte[] data, string key, string iv)
+    {
+        byte[] paddedData = PadData(data);
+
+        using (Aes aesAlg = Aes.Create())
+        {
+            aesAlg.Mode = CipherMode.CBC;
+            aesAlg.Key = Encoding.UTF8.GetBytes(key);
+            aesAlg.IV = Encoding.UTF8.GetBytes(iv);
+
+            using (ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV))
+            {
+                return encryptor.TransformFinalBlock(paddedData, 0, paddedData.Length);
+            }
+        }
+    }
+
+    public static byte[] DecryptCbc(byte[] data, string key, string iv)
+    {
+        using (Aes aesAlg = Aes.Create())
+        {
+            aesAlg.Mode = CipherMode.CBC;
+            aesAlg.Key = Encoding.UTF8.GetBytes(key);
+            aesAlg.IV = Encoding.UTF8.GetBytes(iv); 
+
+            using (ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV))
+            {
+                byte[] decryptedData = decryptor.TransformFinalBlock(data, 0, data.Length);
+                return RemovePadding(decryptedData);
+            }
+        }
+    }
+
+
+    public static byte[] EncryptEcb(byte[] data, string key)
+    {
+        byte[] paddedData = PadData(data);
+
+        using (Aes aesAlg = Aes.Create())
+        {
+            aesAlg.Mode = CipherMode.ECB; 
+            aesAlg.Key = Encoding.UTF8.GetBytes(key);  
+            using (ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, null))
+            {
+                return encryptor.TransformFinalBlock(paddedData, 0, paddedData.Length);
+            }
+        }
+    }
+
+
+    public static byte[] DecryptEcb(byte[] data, string key)
+    {
+        using (Aes aesAlg = Aes.Create())
+        {
+            aesAlg.Mode = CipherMode.ECB;  
+            aesAlg.Key = Encoding.UTF8.GetBytes(key);  
+
+            using (ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, null))
+            {
+                byte[] decryptedData = decryptor.TransformFinalBlock(data, 0, data.Length);
+                return RemovePadding(decryptedData);
+            }
+        }
+    }
+
+    public static byte[] VarToBytes(Godot.Collections.Dictionary<string, Variant> data)
+    {
+        string jsonString = Json.Stringify(data);
+        return System.Text.Encoding.UTF8.GetBytes(jsonString);
+    }
+
+    public static Godot.Collections.Dictionary<string, Variant> BytesToVar(byte[] bytes)
+    {
+        string jsonString = System.Text.Encoding.UTF8.GetString(bytes);
+        Variant result = Json.ParseString(jsonString);
+
+        result = (Godot.Collections.Dictionary<string, Godot.Variant>)result;
+
+        return (Godot.Collections.Dictionary<string, Godot.Variant>)result;
+        
+    }
+
+    public static void SaveGame(Godot.Collections.Dictionary<string, Variant> data, int slot = 1, ENCRYPTIONMODE encryptionMode = ENCRYPTIONMODE.ECB, string savePath = "user://")
+    {
+        string path = savePath + "save_slot" + slot.ToString() + ".sav";
+        byte[] bytes = VarToBytes(data);
+
+        switch (encryptionMode)
+        {
+            case ENCRYPTIONMODE.XOR:
+                bytes = XorEncryptDecrypt(bytes, 12345);
+                break;
+            case ENCRYPTIONMODE.ECB:
+                bytes = EncryptEcb(bytes, "My secret key!!!");
+                break;
+            case ENCRYPTIONMODE.CBC:
+                bytes = EncryptCbc(bytes, "My secret key!!!", "My secret iv!!!!");  // Your key and IV for CBC
+                break;
+        }
+
+        var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+        file.StoreBuffer(bytes);
+        file.Close();
+
+        GD.Print("Game saved to: " + path);
+    }
+
+    public static Godot.Collections.Dictionary<string, Variant> LoadGame(int slot = 1, ENCRYPTIONMODE encryptionMode = ENCRYPTIONMODE.ECB, string savePath = "user://")
+    {
+        string path = savePath + "save_slot" + slot + ".sav";
+        FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+
+        byte[] bytes = file.GetBuffer((long)file.GetLength());
+        file.Close();
+
+        GD.Print("Loaded bytes: " + bytes.Length);
+
+        switch (encryptionMode)
+        {
+            case ENCRYPTIONMODE.XOR:
+                bytes = XorEncryptDecrypt(bytes, 12345);
+                break;
+            case ENCRYPTIONMODE.ECB:
+                bytes = DecryptEcb(bytes, "My secret key!!!");
+                break;
+            case ENCRYPTIONMODE.CBC:
+                bytes = DecryptCbc(bytes, "My secret key!!!", "My secret iv!!!!");
+                break;
+        }
+
+        GD.Print("Decrypted bytes length: " + bytes.Length);
+
+        var result = BytesToVar(bytes);
+        if (result == null || result.Count == 0)
+        {
+            GD.PrintErr("Error: Loaded data is empty or null.");
+            return new Godot.Collections.Dictionary<string, Variant>(); 
+        }
+
+        GD.Print("Loaded data: " + result.ToString());
+
+        return result;
+    }
+
+    public static void SaveConfig(Godot.Collections.Dictionary<string, Godot.Collections.Dictionary<string, Variant>> settings)
+    {
+        var configFile = new ConfigFile();
+        foreach (string section in settings.Keys)
+        {
+            foreach (string key in settings[section].Keys)
+            {
+                configFile.SetValue(section, key, settings[section][key]);
+            }
+        }
+        configFile.Save("user://settings.ini");
+    }
+
+
+    public static void LoadConfig(Godot.Collections.Dictionary<string, Godot.Collections.Dictionary<string, Variant>> settings)
+    {
+        var c = new ConfigFile();
+        Error err = c.Load("user://settings.ini");
+        if (err != Error.Ok)
+        {
+            GD.PushError("Error loading settings");
+        }
+
+        foreach (string section in settings.Keys)
+        {
+            foreach (string key in settings[section].Keys)
+            {
+                settings[section][key] = c.GetValue(section, key);
+            }
+        }
     }
 }

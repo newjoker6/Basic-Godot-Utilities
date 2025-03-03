@@ -135,7 +135,7 @@ static func delayCall(Self:Node, func_ref: Callable, time: float, args:Array = [
 	func_ref.callv(args)
 
 
-## Prints a formatted dictionary with color. The dictionary is converted into a pretty-printed JSON string with indentation, and the output is displayed in the specified color.
+## Prints a formatted dictionary with colour. The dictionary is converted into a pretty-printed JSON string with indentation, and coloured based on value type.
 ## [br][br]
 ## GDScript:
 ## [codeblock lang=gdscript]
@@ -146,8 +146,79 @@ static func delayCall(Self:Node, func_ref: Callable, time: float, args:Array = [
 ## [codeblock lang=csharp]
 ## Utils.PrintPretty(new Godot.Collections.Dictionary { { "name", "John" }, { "age", 30 } }, Color.Green);
 ## [/codeblock]
-static func printPretty(dict: Dictionary, colour: Color = Color.POWDER_BLUE) -> void:
-	print_rich("[color={col}]".format({"col":colour.to_html()}) + JSON.stringify(dict, "\t") + "[/color]")
+static func printPretty(dict: Dictionary) -> void:
+	var result = "{\n"
+	for key in dict.keys():
+		var value = dict[key]
+		var value_color = getValueColor(value)
+		result += "\t[color=powder_blue]\"{key}\"[/color]: [color={val_col}]{val}[/color],\n".format({
+			"key": key,
+			"val_col": value_color.to_html(),
+			"val": valueToString(value)
+		})
+	result += "}"
+	print_rich(result)
+
+
+## Returns a color corresponding to the type of the given value. This is useful for visually 
+## distinguishing different data types in debugging tools or UI elements.
+##
+## [br][br]
+## GDScript:
+## [codeblock lang=gdscript]
+## var color: Color = Utils.getValueColor(42) # Returns Color.LIME_GREEN
+## var color: Color = Utils.getValueColor("Hello") # Returns Color.GOLD
+## [/codeblock]
+##
+## C#:
+## [codeblock lang=csharp]
+## Color color = Utils.GetValueColor(42); // Returns Color.LimeGreen
+## Color color = Utils.GetValueColor("Hello"); // Returns Color.Gold
+## [/codeblock]
+static func getValueColor(value: Variant) -> Color:
+	match typeof(value):
+		TYPE_INT, TYPE_FLOAT:
+			return Color.LIME_GREEN 
+		TYPE_STRING:
+			return Color.GOLD 
+		TYPE_ARRAY, TYPE_PACKED_BYTE_ARRAY, TYPE_PACKED_INT32_ARRAY, TYPE_PACKED_INT64_ARRAY, TYPE_PACKED_FLOAT32_ARRAY, TYPE_PACKED_FLOAT64_ARRAY, TYPE_PACKED_STRING_ARRAY, TYPE_PACKED_VECTOR2_ARRAY, TYPE_PACKED_VECTOR3_ARRAY, TYPE_PACKED_COLOR_ARRAY:
+			return Color.LIGHT_GOLDENROD 
+		TYPE_DICTIONARY:
+			return Color.LIGHT_GREEN 
+		TYPE_BOOL:
+			return Color.INDIAN_RED 
+		TYPE_COLOR:
+			return Color.MEDIUM_PURPLE 
+		TYPE_VECTOR2, TYPE_VECTOR3:
+			return Color.SANDY_BROWN
+		_:
+			return Color.GRAY
+
+
+## Converts a given value into a string representation. Strings are wrapped in quotes, 
+## while arrays and dictionaries are formatted as JSON for better readability.
+##
+## [br][br]
+## GDScript:
+## [codeblock lang=gdscript]
+## var text: String = Utils.valueToString(42) # Returns "42"
+## var text: String = Utils.valueToString("Hello") # Returns '"Hello"'
+## var text: String = Utils.valueToString([1, 2, 3]) # Returns "[\n\t1,\n\t2,\n\t3\n]"
+## [/codeblock]
+##
+## C#:
+## [codeblock lang=csharp]
+## string text = Utils.ValueToString(42); // Returns "42"
+## string text = Utils.ValueToString("Hello"); // Returns "\"Hello\""
+## string text = Utils.ValueToString(new int[] {1, 2, 3}); // Returns JSON formatted string
+## [/codeblock]
+static func valueToString(value: Variant) -> String:
+	if typeof(value) == TYPE_STRING:
+		return '"{0}"'.format([value])
+	elif typeof(value) == TYPE_ARRAY or typeof(value) == TYPE_DICTIONARY:
+		return JSON.stringify(value, "\t")
+	else:
+		return str(value)
 
 
 ## Prints the type of a variable along with its name. The function checks the type of the `value` variable and displays the corresponding type name.
@@ -161,7 +232,7 @@ static func printPretty(dict: Dictionary, colour: Color = Color.POWDER_BLUE) -> 
 ## [codeblock lang=csharp]
 ## Utils.PrintType("testBool", true);
 ## [/codeblock]
-static func printType(varName: String, value: Variant) -> void:
+static func printType(varName: String, value: Variant) -> Variant:
 	var type_names = {
 		TYPE_NIL: "Nil",
 		TYPE_BOOL: "Bool",
@@ -197,6 +268,7 @@ static func printType(varName: String, value: Variant) -> void:
 	print_rich("[color=cyan]{name}[/color] is of type [color=yellow]{type}[/color]".format({
 		"name": varName, "type": type_name
 	}))
+	return type_name
 
 
 ## Logs the current memory usage of the game in megabytes. The function retrieves the static memory usage from the operating system and displays it in the log.

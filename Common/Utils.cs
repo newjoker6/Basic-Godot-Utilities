@@ -73,11 +73,85 @@ public partial class Utils : Node
         funcRef.Call(args);
     }
 
-    public static void PrintPretty(Godot.Collections.Dictionary dict, Color? color = null)
-    {   if (color == null) { color = Colors.PowderBlue;}
-        string colorHex = color.Value.ToHtml();
-        string jsonString = Json.Stringify(dict, "\t");
-        GD.PrintRich($"[color={colorHex}]{jsonString}[/color]");
+    public static void PrintPretty(Godot.Collections.Dictionary dict)
+    {
+        string result = "{\n";
+        foreach (var keyValuePair in dict)
+        {
+            var key = keyValuePair.Key;
+            var value = keyValuePair.Value;
+            var valueColor = GetValueColor(value);
+
+            string keyColored = $"[color=powder_blue]\"{key}\"[/color]";
+            string valueColored = $"[color={valueColor.ToHtml()}]{ValueToString(value)}[/color]";
+
+            result += $"\t{keyColored}: {valueColored},\n";
+        }
+        result += "}";
+
+         GD.PrintRich(result);
+    }
+
+
+    private static Color GetValueColor(object value)
+    {
+        GD.Print(value);
+        GD.Print("Underlying type: " + value.GetType().FullName);
+
+        if (value is Variant variant)
+        {
+            switch (variant.VariantType)
+            {
+                case Variant.Type.Int:
+                case Variant.Type.Float:
+                    GD.Print("Matched int or float");
+                    return new Color(0.0f, 1.0f, 0.0f);  // Lime Green
+                case Variant.Type.String:
+                    GD.Print("Matched string");
+                    return new Color(1.0f, 0.84f, 0.0f);  // Gold
+                case Variant.Type.Array:
+                case Variant.Type.PackedByteArray:
+                case Variant.Type.PackedInt32Array:
+                case Variant.Type.PackedInt64Array:
+                case Variant.Type.PackedFloat32Array:
+                case Variant.Type.PackedFloat64Array:
+                case Variant.Type.PackedStringArray:
+                case Variant.Type.PackedVector2Array:
+                case Variant.Type.PackedVector3Array:
+                case Variant.Type.PackedColorArray:
+                    GD.Print("Matched array or packed array");
+                    return new Color(1.0f, 0.85f, 0.44f);  // Light Goldenrod
+                case Variant.Type.Dictionary:
+                    GD.Print("Matched dictionary");
+                    return new Color(0.56f, 1.0f, 0.56f);  // Light Green
+                case Variant.Type.Bool:
+                    GD.Print("Matched bool");
+                    return new Color(0.8f, 0.36f, 0.36f);  // Indian Red
+                case Variant.Type.Color:
+                    GD.Print("Matched color");
+                    return new Color(0.58f, 0.44f, 0.86f);  // Medium Purple
+                case Variant.Type.Vector2:
+                case Variant.Type.Vector3:
+                    GD.Print("Matched vector");
+                    return new Color(0.96f, 0.64f, 0.38f);  // Sandy Brown
+                default:
+                    GD.Print("Wildcard match");
+                    return new Color(0.75f, 0.75f, 0.75f);  // Gray
+            }
+        }
+
+        GD.Print("Not a Variant type");
+        return new Color(0.75f, 0.75f, 0.75f);
+    }
+
+    private static string ValueToString(Variant value)
+    {
+        return value.VariantType switch
+        {
+            Variant.Type.String => $"\"{value.ToString()}\"",
+            Variant.Type.Array or Variant.Type.Dictionary => Json.Stringify(value, "\t"),
+            _ => value.ToString()
+        };
     }
 
     public static void PrintType(string varName, Variant value)

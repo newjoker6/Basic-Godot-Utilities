@@ -125,35 +125,35 @@ The `Utils` class provides functions to format values for debugging:
 <img src="Assets/RainbowLog.png">
 
 #### Pulsate Logs
-Pulsates between white and colour of choice
+Pulsates between white and colour of choice[br]
 <img src="Assets/PulsateLog.png">
 
 #### Gradient Logs
-Logs with a gradient of your two colour choices
+Logs with a gradient of your two colour choices[br]
 <img src="Assets/GradientLog.png">
 
 #### Highlight Logs
-Highlight a log entry for easy viewing
+Highlight a log entry for easy viewing[br]
 <img src="Assets/HighlightLog.png">
 
 #### printPretty
-Easy to read with colour coded data types
+Easy to read with colour coded data types[br]
 <img src="Assets/printPretty.png">
 
 #### printType
-Logged data types instead of mysterious numbers you have to lookup
+Logged data types instead of mysterious numbers you have to lookup[br]
 <img src="Assets/printType.png">
 
 #### logMemory
-Keep track of the alotted memory at any point without changing tabs or remembering to enable graphs
+Keep track of the alotted memory at any point without changing tabs or remembering to enable graphs[br]
 <img src="Assets/logMemory.png">
 
 #### logFPS
-Easy to grab FPS
+Easy to grab FPS[br]
 <img src="Assets/logFPS.png">
 
 #### logVRAM and logTenderingStats
-Easy to read with colour coded data types
+Easy to read with colour coded data types[br]
 <img src="Assets/logVRAM.png">
 
 ---

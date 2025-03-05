@@ -161,7 +161,6 @@ Easy to grab FPS
 <img src="Assets/logFPS.png">
 
 #### logVRAM and logTenderingStats
-Easy to read with colour coded data types
 
 <img src="Assets/logVRAM.png">
 

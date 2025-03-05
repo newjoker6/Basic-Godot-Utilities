@@ -25,7 +25,7 @@ Copy the `Utils` script into your Godot project's script directory. The library 
 tools.Utils.saveGame({"player_health": 100, "level": 3}, 1, Utils.ENCRYPTIONMODE.CBC)
 
 # Load game data
-var data = tools.Utils.loadGame(1, Utils.ENCRYPTIONMODE.CBC)
+var data = Utils.loadGame(1, Utils.ENCRYPTIONMODE.CBC)
 print(data)
 ```
 
@@ -58,7 +58,7 @@ var settings = {
         "sfx": 4
     }
 }
-tools.Utils.saveConfig(settings)
+Utils.saveConfig(settings)
 ```
 
 ##### **C#**
@@ -80,7 +80,7 @@ Utils.SaveConfig(settings);
 #### **Loading Configuration**
 ##### **GDScript**
 ```gdscript
-tools.Utils.loadConfig(settings)
+Utils.loadConfig(settings)
 ```
 ##### **C#**
 ```csharp
@@ -92,19 +92,7 @@ Utils.LoadConfig(settings);
 ### **Type Formatting & Colorization**
 The `Utils` class provides functions to format values for debugging:
 
-#### **GDScript**
-```gdscript
-var value = "Hello, world!"
-print(Utils.valueToString(value)) # Output: "Hello, world!"
-print(Utils.getValueColor(value)) # Returns Color.GOLD
-```
-
-#### **C#**
-```csharp
-Godot.Variant value = "Hello, world!";
-GD.Print(Utils.ValueToString(value)); // Output: "Hello, world!"
-GD.Print(Utils.GetValueColor(value)); // Returns Color.GOLD
-```
+![Available Functions](Assets/FunctionList.png)
 
 ---
 

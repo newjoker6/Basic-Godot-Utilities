@@ -16,4 +16,4 @@ mono_crash.*.json
 
 # My Ignores
 Common/*.uid
-Assets/*
+

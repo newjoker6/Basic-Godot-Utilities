@@ -92,7 +92,8 @@ Utils.LoadConfig(settings);
 ### **Type Formatting & Colorization**
 The `Utils` class provides functions to format values for debugging:
 
-![Available Functions](Assets/FunctionList.png)
+<img src="Assets/FunctionList.png">
+
 
 ---
 

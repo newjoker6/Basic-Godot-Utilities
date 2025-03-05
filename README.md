@@ -1,4 +1,4 @@
-# Universal Scripts - Godot Utility Library
+# Universal Scripts - Utils
 
 ## Overview
 The `Utils` class provides various utility functions for debugging, logging, encryption, memory management, and configuration handling. It supports both **GDScript** and **C#**, allowing seamless integration into Godot projects regardless of the scripting language used.

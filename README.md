@@ -37,6 +37,8 @@ void MyFunction()
     GD.Print("This runs after 2 seconds!");
 }
 
+```
+
 ---
 
 ### **Saving and Loading Game Data**

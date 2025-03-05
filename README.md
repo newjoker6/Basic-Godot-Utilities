@@ -22,7 +22,7 @@ Copy the `Utils` script into your Godot project's script directory. The library 
 #### **GDScript**
 ```gdscript
 # Save game data
-tools.Utils.saveGame({"player_health": 100, "level": 3}, 1, Utils.ENCRYPTIONMODE.CBC)
+Utils.saveGame({"player_health": 100, "level": 3}, 1, Utils.ENCRYPTIONMODE.CBC)
 
 # Load game data
 var data = Utils.loadGame(1, Utils.ENCRYPTIONMODE.CBC)

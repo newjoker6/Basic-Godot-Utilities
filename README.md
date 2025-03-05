@@ -17,6 +17,28 @@ Copy the `Utils` script into your Godot project's script directory. The library 
 
 ## Usage
 
+### **Delay Your Function Calls**
+
+#### **GDScript**
+```gdscript
+Utils.delayedCall(2.0, self, "myFunction")
+
+func myFunction():
+    print("This runs after 2 seconds!")
+
+```
+
+#### **C#**
+```csharp
+Utils.DelayedCall(2.0f, this, "MyFunction");
+
+void MyFunction()
+{
+    GD.Print("This runs after 2 seconds!");
+}
+
+---
+
 ### **Saving and Loading Game Data**
 
 #### **GDScript**
@@ -98,6 +120,41 @@ The `Utils` class provides functions to format values for debugging:
 ---
 
 ## **Screenshots & Examples**
+
+#### Rainbow Logs
+<img src="Assets/RainbowLog.png">
+
+#### Pulsate Logs
+Pulsates between white and colour of choice
+<img src="Assets/PulsateLog.png">
+
+#### Gradient Logs
+Logs with a gradient of your two colour choices
+<img src="Assets/GradientLog.png">
+
+#### Highlight Logs
+Highlight a log entry for easy viewing
+<img src="Assets/HighlightLog.png">
+
+#### printPretty
+Easy to read with colour coded data types
+<img src="Assets/printPretty.png">
+
+#### printType
+Logged data types instead of mysterious numbers you have to lookup
+<img src="Assets/printType.png">
+
+#### logMemory
+Keep track of the alotted memory at any point without changing tabs or remembering to enable graphs
+<img src="Assets/logMemory.png">
+
+#### logFPS
+Easy to grab FPS
+<img src="Assets/logFPS.png">
+
+#### logVRAM and logTenderingStats
+Easy to read with colour coded data types
+<img src="Assets/logVRAM.png">
 
 ---
 

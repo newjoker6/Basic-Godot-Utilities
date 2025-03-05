@@ -21,7 +21,7 @@ Copy the `Utils` script into your Godot project's script directory. The library 
 
 #### **GDScript**
 ```gdscript
-Utils.delayedCall(2.0, self, "myFunction")
+Utils.delayCall(2.0, self, "myFunction")
 
 func myFunction():
     print("This runs after 2 seconds!")
@@ -30,7 +30,7 @@ func myFunction():
 
 #### **C#**
 ```csharp
-Utils.DelayedCall(2.0f, this, "MyFunction");
+Utils.DelayCall(2.0f, this, "MyFunction");
 
 void MyFunction()
 {
